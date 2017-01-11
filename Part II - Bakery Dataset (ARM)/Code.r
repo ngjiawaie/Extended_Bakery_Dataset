@@ -22,15 +22,20 @@ sparse_df$Food_Num_5 <- df$food[match(sparse_df$Food_Num_5,df$id)]
 sparse_df$Food_Num_6 <- df$food[match(sparse_df$Food_Num_6,df$id)]
 names(full_binary_df) <- c("Receipt_Number", as.character(df$food))
 receipt_df$Receipt_Number <- as.factor(receipt_df$Receipt_Number)
-
+test_df <- receipt_df[,c("Receipt_Number","Food")]
+df_trans <- as(split(test_df$Food, test_df$Receipt_Number), "transactions")
 #------------------------------------------------------------------End of Data Preparation
+
 #-----------Converting csv files to transaction/ market basket format for apriori analysis
+#write.csv(receipt_df, "output.csv", row.names = F)
+#required_Data<-read.transactions("output.csv", rm.duplicates=TRUE, format = "basket")
+#----------required_Data should be ready for apriori by now.
+
+#-----------------------------------------Psst, dun ask y
 install.packages("arules")
 library(arules)
-write.csv(receipt_df, "output.csv", row.names = F)
-required_Data<-read.transactions("output.csv", rm.duplicates=TRUE, format = "basket")
-#----------required_Data should be ready for apriori by now.
-rules<-apriori(required_Data, 
+rules<-apriori(df_trans, 
                control=list(verbose=F),
                parameter=list(supp=0.005,conf=0.8))
 inspect(rules)
+
