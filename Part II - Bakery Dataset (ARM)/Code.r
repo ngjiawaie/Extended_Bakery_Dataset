@@ -5,7 +5,7 @@ df <- data.frame(id,food)
 
 #Choose 1000i.csv
 receipt_df <- read.csv(file.choose(), header = F)
-names(receipt_df) <- c("Receipt_Number","Food","Quantity")
+names(receipt_df) <- c("Receipt_Number","Quantity","Food")
 #Choose 1000-out1.csv
 sparse_df <- read.csv(file.choose(), header = F, na.strings = "")
 names(sparse_df) <- c("Receipt_Number", "Food_Num_1", "Food_Num_2", "Food_Num_3","Food_Num_4","Food_Num_5","Food_Num_6")
