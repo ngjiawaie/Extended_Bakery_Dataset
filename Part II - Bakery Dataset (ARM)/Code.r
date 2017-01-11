@@ -21,3 +21,8 @@ sparse_df$Food_Num_4 <- df$food[match(sparse_df$Food_Num_4,df$id)]
 sparse_df$Food_Num_5 <- df$food[match(sparse_df$Food_Num_5,df$id)]
 sparse_df$Food_Num_6 <- df$food[match(sparse_df$Food_Num_6,df$id)]
 names(full_binary_df) <- c("Receipt_Number", as.character(df$food))
+#------------------------------------------------------------------End of Data Preparation
+#-----------Converting csv files to transaction/ market basket format for apriori analysis
+write.csv(receipt_df, "output.csv", row.names = F)
+required_Data<-read.transactions("output.csv", rm.duplicates=TRUE, format = "basket")
+#----------reuired_Data should be ready for apriori by now.
