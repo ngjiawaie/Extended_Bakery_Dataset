@@ -43,5 +43,7 @@ library(ggplot2)
 reorder_size <- function(x) {
   factor(x, levels = names(sort(table(x))))
 }
-a <- ggplot(data = receipt_df, aes(x = reorder_size(Food), fill = as.factor(Quantity))) + geom_bar(colour = "black") + coord_flip()
-a
+#Initial Plot
+ggplot(data = receipt_df, aes(x = reorder_size(Food), fill = as.factor(Quantity))) + geom_bar(colour = "black") + coord_flip()
+#Plot using facet, foods that is bought in different quantity is visualized in different charts
+ggplot(data = receipt_df, aes(x = reorder_size(Food), fill = as.factor(Quantity))) + geom_bar(colour = "black") + facet_grid(as.factor(Quantity)~.)
