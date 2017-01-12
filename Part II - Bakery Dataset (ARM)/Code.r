@@ -7,8 +7,7 @@ df <- data.frame(id,food)
 receipt_df <- read.csv(file.choose(), header = F)
 names(receipt_df) <- c("Receipt_Number","Quantity","Food")
 #Choose 1000-out1.csv
-sparse_df <- read.csv(file.choose(), header = F, na.strings = "")
-names(sparse_df) <- c("Receipt_Number", "Food_Num_1", "Food_Num_2", "Food_Num_3","Food_Num_4","Food_Num_5","Food_Num_6")
+sparse_df <- read.csv(file.choose(), fill = T, header = F, na.strings = "", col.names = c("Receipt_Number", "Food_Num_1", "Food_Num_2", "Food_Num_3","Food_Num_4","Food_Num_5","Food_Num_6","Food_Num_7", "Food_Num_8"))
 #Choose 1000-out2.csv
 full_binary_df <- read.csv(file.choose(), header = F)
 names(full_binary_df) <- c("Receipt_Number", c(0:49))
@@ -20,6 +19,8 @@ sparse_df$Food_Num_3 <- df$food[match(sparse_df$Food_Num_3,df$id)]
 sparse_df$Food_Num_4 <- df$food[match(sparse_df$Food_Num_4,df$id)]
 sparse_df$Food_Num_5 <- df$food[match(sparse_df$Food_Num_5,df$id)]
 sparse_df$Food_Num_6 <- df$food[match(sparse_df$Food_Num_6,df$id)]
+sparse_df$Food_Num_7 <- df$food[match(sparse_df$Food_Num_7,df$id)]
+sparse_df$Food_Num_8 <- df$food[match(sparse_df$Food_Num_8,df$id)]
 names(full_binary_df) <- c("Receipt_Number", as.character(df$food))
 receipt_df$Receipt_Number <- as.factor(receipt_df$Receipt_Number)
 test_df <- receipt_df[,c("Receipt_Number","Food")]
@@ -39,7 +40,6 @@ rules<-apriori(df_trans,
                parameter=list(supp=0.005,conf=0.8))
 inspect(rules)
 
-
 library(ggplot2)
 reorder_size <- function(x) {
   factor(x, levels = names(sort(table(x))))
@@ -48,4 +48,3 @@ reorder_size <- function(x) {
 ggplot(data = receipt_df, aes(x = reorder_size(Food), fill = as.factor(Quantity))) + geom_bar(colour = "black") + coord_flip()
 #Plot using facet, foods that is bought in different quantity is visualized in different charts
 ggplot(data = receipt_df, aes(x = reorder_size(Food), fill = as.factor(Quantity))) + geom_bar(colour = "black") + facet_grid(as.factor(Quantity)~.) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
