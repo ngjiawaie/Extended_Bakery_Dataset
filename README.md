@@ -1,3 +1,4 @@
+## Run bakery_md.Rmd for R Markdown. (With R Shiny in the Rmd file for dynamic visualization of graphs)
 ## Question
 ### 1. Objective
 This dataset records information about sales for a bakery shop. By doing association rule mining, we can improve business sales by uncovering relationships between items sold in the bakery. For instance, we can discover what item are usually sold together and hence making business decisions based on these associations.
