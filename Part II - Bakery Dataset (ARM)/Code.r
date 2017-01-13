@@ -17,10 +17,9 @@ names(receipt_df) <- c("Receipt_Number","Quantity","Food", "Flavor", "Type")
 
 test_df <- receipt_df[,c("Receipt_Number","Food", "Flavor", "Type")]
 typeof(test_df)
-install.packages("arules")
+#install.packages("arules")
 library(arules)
 df_trans <- as(split(test_df$Food, test_df$Receipt_Number), "transactions")
-df_trans
 df_trans_Flavor <- as(split(test_df$Flavor, test_df$Receipt_Number), "transactions")
 df_trans_Type <- as(split(test_df$Type, test_df$Receipt_Number), "transactions")
 #------------------------------------------------------------------End of Data Preparation
@@ -35,12 +34,6 @@ ggplot(data = receipt_df, aes(x = reorder_size(Food), fill = as.factor(Quantity)
 #Plot using facet, foods that is bought in different quantity is visualized in different charts
 ggplot(data = receipt_df, aes(x = reorder_size(Food), fill = as.factor(Quantity))) + geom_bar(colour = "black") + facet_grid(as.factor(Quantity)~.) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-#-----------Converting csv files to transaction/ market basket format for apriori analysis
-#write.csv(receipt_df, "output.csv", row.names = F)
-#required_Data<-read.transactions("output.csv", rm.duplicates=TRUE, format = "basket")
-#----------required_Data should be ready for apriori by now.
-
-#-----------------------------------------Psst, dun ask y
 #start timer
 ptm <- proc.time()
 rules<-apriori(df_trans, 
@@ -48,7 +41,7 @@ rules<-apriori(df_trans,
                parameter=list(supp=0.015,conf=0.9))
 rules.sorted <- sort(rules, by="lift")
 
-#trying to apply remove redundancy
+#trying to remove redundancy
 subset.matrix <- is.subset(rules.sorted, rules.sorted)
 subset.matrix[lower.tri(subset.matrix, diag=T)] <- NA
 redundant <- colSums(subset.matrix, na.rm=T) >= 1
