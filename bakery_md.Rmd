@@ -1,0 +1,294 @@
+---
+title: "Extended Bakery Set"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# {.tabset .tabset-fade .tabset-pills}
+## Question
+### 1. Objective
+This dataset records information about sales for a bakery shop. By doing association rule mining, we can improve business sales by uncovering relationships between items sold in the bakery. For instance, we can discover what item are usually sold together and hence making business decisions based on these associations.
+
+### 2. Dataset description
+<p>The dataset contains transactions made by customers and each transaction hold records of item(s) sold and its quantity sold.</p>
+#### Data preprocessing done:
+
+* Quantity column is omitted from the dataset as quantity of purchase will not affect the outcome gain from association rule mining.
+* Each integer representation of Food column into mapped into its text representation that are more meaningful.
+    + This is done so that when doing association rule mining or even when visualizing the data, everything          will be more obvious. 
+* Header names are added to each of the columns of the dataset so that we can correctly differentiate between columns. 
+* Data is converted into basket format so that we can run it in apriori.
+
+### 3. Rule mining process
+Parameter Settings (Based on 1000i.csv)
+<table>
+| Parameter     | Value         |
+|---------------|---------------|
+| Support       | 0.015         |
+| Confidence    | 0.9           |
+| Algorithm     | apriori       |
+| Time required | 0.20s - 0.24s |
+</table>
+
+### 4. Resulting rules
+This association rule mining tells us which item are normally sold with other items. <br>
+After pruning the rules, we are left with 28 rules. (Was 68 before pruning) <br><br>
+<p>A summary of the rules (Pruned) </p>
+<table>
+| Description       | Value  |
+|-------------------|--------|
+|minimum support    | 0.018  |
+|maximum support    | 0.040  |
+|minimum confidence | 0.9    |
+|maximum confidence | 1.0    |
+|minimum lift       | 11.18  |
+|maximum lift       | 19.61  |
+</table>
+
+### 5. Recommendations
+Clients can do bundled promotions based on the rules discovered. <br>
+The rules has shown that those who like coffee flavor will also favor blackberry flavor. Hence we can conclude that customers enjoy the combination of these flavors as their meals. The recommendation that we can give to the client is, try to make a bundle based on the combination of flavor of the menu. Besides that, those who buy vanilla frappucino and walnut cookie are likely to buy chocolate tart. Hence the client can sell these in a bundle. Clients can also do discounts and promotion on items that are frequently bought together. For instance, Those who buy coffee drink can get discounted price for eclair,pie or twist.
+
+
+## R Code
+### Imported libraries 
+```{r message=F}
+library(arules)
+library(arulesViz)
+library(ggplot2)
+```
+<hr>
+
+### Association Rule Mining{.tabset}
+#### Data preprocessing
+<h4>Import the dataset</h4>
+Load the dataset and assigning header names to each column
+```{r}
+receipt_df <- read.csv("1000i.csv", header = F)
+names(receipt_df) <- c("Receipt_Number","Quantity","Food")
+```
+Before preprocessing
+```{r echo=F}
+head(receipt_df)
+```
+
+<h4>Data preprocessing </h4>
+Create a dataframe containing each item and its corresponding item_ID
+```{r}
+id <- c(0:49)
+food <- c("Chocolate Cake","Lemon Cake","Casino Cake","Opera Cake", "Strawberry Cake", "Truffle Cake", "Chocolate Eclair", "Coffee Eclair", "Vanilla Eclair", "Napolean Cake", "Almond Tart", "Apple Pie", "Apple Tart","Apricot Tart", "Berry Tart", "Blackberry Tart", "Blueberry Tart", "Chocolate Tart", "Cherry Tart", "Lemon Tart", "Pecan Tart", "Ganache Cookie", "Gongolais Cookie", "Raspberry Cookie", "Lemon Cookie", "Chocolate Meringue", "Vanilla Meringue", "Marzipan Cookie", "Tuile Cookie", "Walnut Cookie", "Almond Croissant", "Apple Croissant", "Apricot Croissant", "Cheese Croissant", "Chocolate Croissant", "Apricot Danish", "Apple Danish", "Almond Twist", "Almond Bear_Claw", "Blueberry Danish", "Lemon Lemonade", "Raspberry Lemonade", "Orange Juice", "Green Tea", "Bottled Water", "Hot Coffee", "Chocolate Coffee", "Vanilla Frappucino", "Cherry Soda", "Single Espresso")
+df <- data.frame(id, food)
+```
+Map item_ID to its text representation
+```{r}
+receipt_df$Food <- df$food[match(receipt_df$Food,df$id)]
+```
+Seperating food into "Flavor" and "Type" representation
+```{r}
+ft <- matrix(unlist(strsplit(as.character(receipt_df$Food), ' ')) , ncol=2, byrow=TRUE)
+receipt_df <- data.frame(receipt_df, ft)
+names(receipt_df) <- c("Receipt_Number","Quantity","Food", "Flavor", "Type")
+```
+After preprocessing
+```{r}
+head(receipt_df)
+```
+Convert into basket format to run in apriori
+```{r warning=F}
+test_df <- receipt_df[,c("Receipt_Number","Food", "Flavor", "Type")]
+df_trans <- as(split(test_df$Food, test_df$Receipt_Number), "transactions")
+df_trans_Flavor <- as(split(test_df$Flavor, test_df$Receipt_Number), "transactions")
+df_trans_Type <- as(split(test_df$Type, test_df$Receipt_Number), "transactions")
+```
+#### Association Rule Mining (Item)
+```{r}
+#start timer
+ptm <- proc.time() #Calculate running time
+rules<-apriori(df_trans, 
+               control=list(verbose=F),
+               parameter=list(supp=0.015,conf=0.9))
+
+#trying to remove redundancy
+subset.matrix <- is.subset(rules, rules)
+subset.matrix[lower.tri(subset.matrix, diag=T)] <- NA
+redundant <- colSums(subset.matrix, na.rm=T) >= 1
+
+#remove redundant rules
+rules.pruned <- rules[!redundant]
+rules <- rules.pruned
+
+#end timer
+proc.time() - ptm
+```
+```{r echo=F}
+df <- as(rules, "data.frame") 
+df[order(-df$lift), ]
+```
+#### Association Rule Mining (Flavor)
+```{r}
+#start timer
+ptm <- proc.time()
+rules2<-apriori(df_trans_Flavor, 
+               control=list(verbose=F),
+               parameter=list(supp=0.005,conf=0.7))
+
+#trying to apply remove redundancy
+subset.matrix <- is.subset(rules2, rules2)
+subset.matrix[lower.tri(subset.matrix, diag=T)] <- NA
+redundant <- colSums(subset.matrix, na.rm=T) >= 1
+
+#remove redundant rules
+rules2.pruned <- rules2[!redundant]
+rules2 <- rules2.pruned
+
+#end timer
+proc.time() - ptm
+```
+```{r echo=F}
+df <- as(rules2, "data.frame") 
+df[order(-df$lift), ]
+```
+
+
+#### Association Rule Mining (Type)
+```{r}
+#start timer
+ptm <- proc.time()
+rules3<-apriori(df_trans_Type, 
+                control=list(verbose=F),
+                parameter=list(supp=0.010,conf=0.8))
+
+#trying to apply remove redundancy
+subset.matrix <- is.subset(rules3, rules3)
+subset.matrix[lower.tri(subset.matrix, diag=T)] <- NA
+redundant <- colSums(subset.matrix, na.rm=T) >= 1
+
+#remove redundant rules
+rules3.pruned <- rules3[!redundant]
+rules3 <- rules3.pruned
+
+#end timer
+proc.time() - ptm
+```
+```{r echo=F}
+df <- as(rules3, "data.frame") 
+df[order(-df$lift), ]
+```
+
+## Visualization
+```{r, echo = FALSE}
+shinyApp(
+  
+ui <- fluidPage(
+  titlePanel("Bakery Dataset (Association Rules)"),
+  sidebarLayout(
+    sidebarPanel(
+      helpText("Explore the data!"),br(),
+      selectInput("TypeOfGraph",
+                label = "Type:",
+                choices = c("Basic Data Plot", "Basic Data Plot with facet"),
+                selected = "Basic Data Plot")
+    ),
+    mainPanel(
+      plotOutput("bar")
+    )
+  ),
+  sidebarLayout(
+    sidebarPanel(
+      helpText("Time for some Association Rules Mining!"),br(),
+      selectInput("TypeOfData",
+                  label = "Data To be Mined: ",
+                  choices = c("Food", "Flavor", "Type of Food"),
+                  selected = "Food"),
+      sliderInput(inputId="conf_value", 
+                  label="Confidence:", 
+                  min=0.7, max=0.99, value=0.8, step=1/100000),br(),
+      sliderInput(inputId="supp_value", 
+                  label="Support:", 
+                  min=0.01, max=0.03, value=0.015, step=1/100000),br(),
+      selectInput("TypeOfPlot",
+                  label = "Type:",
+                  choices = c("Scatter", "Scatter(Lift as parameter)", "Grouped", "Graph", "Parallel Coordinates", "Matrixs"),
+                  selected = "Scatter")
+    ),
+    mainPanel(
+      plotOutput("plot"),
+      plotOutput("time")
+    )
+  )
+),
+
+server <- function(input, output) {
+  
+  output$bar<- renderPlot({
+    
+    reorder_size <- function(x) {
+      factor(x, levels = names(sort(table(x))))
+    }
+    #Initial Plot
+    if(input$TypeOfGraph == "Basic Data Plot"){
+      ggplot(data = receipt_df, aes(x = reorder_size(Food), fill = as.factor(Quantity))) + geom_bar(colour = "black") + coord_flip()
+    }
+    #Plot using facet, foods that is bought in different quantity is visualized in different charts
+    else if(input$TypeOfGraph == "Basic Data Plot with facet"){
+    ggplot(data = receipt_df, aes(x = reorder_size(Food), fill = as.factor(Quantity))) + geom_bar(colour = "black") + facet_grid(as.factor(Quantity)~.) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    }
+    
+  })
+  output$plot<- renderPlot({
+    ##remove redundant
+    df_trans_sel <- df_trans
+    if(input$TypeOfData == "Food"){
+      df_trans_sel <- df_trans
+    }
+    else if(input$TypeOfData == "Flavor"){
+      df_trans_sel <- df_trans_Flavor
+    }
+    else if(input$TypeOfData == "Type of Food"){
+      df_trans_sel <- df_trans_Type
+    }
+    beginning <- Sys.time()
+    rules<-apriori(df_trans_sel, 
+                   control=list(verbose=F),
+                   parameter=list(supp=input$supp_value,conf=input$conf_value))
+    #rules.sorted <- sort(rules, by="lift")
+    rules.sorted <- rules #sorting gives error in runtime: shiny
+    subset.matrix <- is.subset(rules.sorted, rules.sorted)
+    subset.matrix[lower.tri(subset.matrix, diag=T)] <- NA
+    redundant <- colSums(subset.matrix, na.rm=T) >= 1
+    rules.pruned <- rules.sorted[!redundant]
+    rules <- rules.pruned
+    
+    #trying plot to see what kind of results that we might expected
+    subrules <- rules
+    if(input$TypeOfPlot == "Scatter(Lift as parameter)"){
+      plot(subrules, measure=c("support","lift"), shading="confidence")
+    }
+    #trying to find out more about the high lift and high confidence item
+    else if(input$TypeOfPlot == "Grouped"){
+      plot(subrules, method="grouped")
+    }  
+    else if(input$TypeOfPlot == "Graph"){
+      plot(subrules, method="graph")
+    } 
+    else if(input$TypeOfPlot == "Scatter"){
+      plot(subrules, method="scatterplot")
+    } 
+    else if(input$TypeOfPlot == "Parallel Coordinates"){
+      plot(subrules, method="paracoord")
+    } 
+    else if(input$TypeOfPlot == "Matrixs"){
+      plot(subrules, method="matrix", measure=c("lift"))
+    }
+    end <- Sys.time()  
+    print(end - beginning)
+  })
+},
+options = list(height = 1400)
+)
+```
