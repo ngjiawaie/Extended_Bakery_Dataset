@@ -13,21 +13,18 @@ This dataset records information about sales for a bakery shop. By doing associa
 * Data is converted into basket format so that we can run it in apriori.
 
 ### 3. Rule mining process
-Parameter Settings (Based on 1000i.csv)
-<table>
+<p>Parameter Settings (Based on 1000i.csv)</p>
 | Parameter     | Value         |
 |---------------|---------------|
 | Support       | 0.015         |
 | Confidence    | 0.9           |
 | Algorithm     | apriori       |
 | Time required | 0.20s - 0.24s |
-</table>
 
 ### 4. Resulting rules
 This association rule mining tells us which item are normally sold with other items. <br>
 After pruning the rules, we are left with 28 rules. (Was 68 before pruning) <br><br>
 <p>A summary of the rules (Pruned) </p>
-<table>
 | Description       | Value  |
 |-------------------|--------|
 |minimum support    | 0.018  |
@@ -36,7 +33,6 @@ After pruning the rules, we are left with 28 rules. (Was 68 before pruning) <br>
 |maximum confidence | 1.0    |
 |minimum lift       | 11.18  |
 |maximum lift       | 19.61  |
-</table>
 
 ### 5. Recommendations
 Clients can do bundled promotions based on the rules discovered. <br>
