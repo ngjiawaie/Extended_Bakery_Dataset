@@ -103,7 +103,7 @@ inspect(rules3)
 proc.time() - ptm
 
 #Visualize
-install.packages("arulesViz")
+#install.packages("arulesViz")
 library(arulesViz)
 
 #trying plot to see what kind of results that we might expected
