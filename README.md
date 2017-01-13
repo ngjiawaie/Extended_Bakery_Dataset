@@ -33,6 +33,7 @@ After pruning the rules, we are left with 28 rules. (Was 68 before pruning) <br>
 |maximum confidence | 1.0    |
 |minimum lift       | 11.18  |
 |maximum lift       | 19.61  |
+A selection of those we would show to the client are rules with high support, confidence and lift value.
 
 ### 5. Recommendations
 Clients can do bundled promotions based on the rules discovered. <br>
