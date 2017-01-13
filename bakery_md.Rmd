@@ -1,7 +1,7 @@
 ---
 title: "Extended Bakery Set"
-output: html_document
 runtime: shiny
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Question
 ### 1. Objective
 This dataset records information about sales for a bakery shop. By doing association rule mining, we can improve business sales by uncovering relationships between items sold in the bakery. For instance, we can discover what item are usually sold together and hence making business decisions based on these associations.
-
+<hr>
 ### 2. Dataset description
 <p>The dataset contains transactions made by customers and each transaction hold records of item(s) sold and its quantity sold.</p>
 #### Data preprocessing done:
@@ -24,6 +24,7 @@ This dataset records information about sales for a bakery shop. By doing associa
 * Header names are added to each of the columns of the dataset so that we can correctly differentiate between columns. 
 * Data is converted into basket format so that we can run it in apriori.
 
+<hr>
 ### 3. Rule mining process
 Parameter Settings (Based on 1000i.csv)
 <table>
@@ -35,6 +36,7 @@ Parameter Settings (Based on 1000i.csv)
 | Time required | 0.20s - 0.24s |
 </table>
 
+<hr>
 ### 4. Resulting rules
 This association rule mining tells us which item are normally sold with other items. <br>
 After pruning the rules, we are left with 28 rules. (Was 68 before pruning) <br><br>
@@ -49,7 +51,9 @@ After pruning the rules, we are left with 28 rules. (Was 68 before pruning) <br>
 |minimum lift       | 11.18  |
 |maximum lift       | 19.61  |
 </table>
+A selection of those we would show to the client are rules with high support, confidence and lift value.
 
+<hr>
 ### 5. Recommendations
 Clients can do bundled promotions based on the rules discovered. <br>
 The rules has shown that those who like coffee flavor will also favor blackberry flavor. Hence we can conclude that customers enjoy the combination of these flavors as their meals. The recommendation that we can give to the client is, try to make a bundle based on the combination of flavor of the menu. Besides that, those who buy vanilla frappucino and walnut cookie are likely to buy chocolate tart. Hence the client can sell these in a bundle. Clients can also do discounts and promotion on items that are frequently bought together. For instance, Those who buy coffee drink can get discounted price for eclair,pie or twist.
@@ -181,6 +185,32 @@ df[order(-df$lift), ]
 ```
 
 ## Visualization
+### {.tabset}
+#### ggplot2
+Some of the plots from Code.r, refer Shiny for interactivity.
+```{r}
+reorder_size <- function(x) {
+  factor(x, levels = names(sort(table(x))))
+}
+```
+```{r}
+ggplot(data = receipt_df, aes(x = reorder_size(Food), fill = as.factor(Quantity))) + geom_bar(colour = "black") + coord_flip()
+```
+```{r}
+ggplot(data = receipt_df, aes(x = reorder_size(Food), fill = as.factor(Quantity))) + geom_bar(colour = "black") + facet_grid(as.factor(Quantity)~.) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+```{r}
+#trying plot to see what kind of results that we might expected
+plot(rules, measure=c("support","lift"), shading="confidence")
+
+```
+```{r}
+#flavor rule, trying to see what can we get from rules 2
+plot(rules2, measure=c("support","lift"), shading="confidence")
+```
+
+
+#### Shiny
 ```{r, echo = FALSE}
 shinyApp(
   
