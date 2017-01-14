@@ -1,3 +1,6 @@
+#Please refer to link below to see complete R markdown Visualization, <br> https://ngjiawaie.github.io/Extended_Bakery_Dataset/
+
+
 ## Run bakery_md.Rmd for R Markdown. (With R Shiny in the Rmd file for dynamic visualization of graphs)
 ## Question
 ### 1. Objective
